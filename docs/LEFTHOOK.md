@@ -8,7 +8,9 @@ See references/lefthook-setup.md for platform-specific installation.
 
 ## Configuration
 
-Copy `lefthook.yml` from skill root to project root.
+Copy `references/lefthook-consumer-template.yml` from this skill to your project root as `lefthook.yml`. The `lefthook.yml` in the skill root is this repository's own pre-push configuration (typecheck, `npm test`, `npm run test:validators`), not the template.
+
+The template's commands are examples: only `npm test` is standard; define any other script it calls (such as `validate:theme-json`) in your project first.
 
 ## Running Hooks
 
@@ -17,7 +19,7 @@ Copy `lefthook.yml` from skill root to project root.
 lefthook run pre-commit
 
 # Run specific hook
-lefthook run pre-commit jest
+lefthook run pre-commit tests
 
 # Bypass hooks
 git commit --no-verify
@@ -32,4 +34,4 @@ git commit --no-verify
 
 ---
 
-See lefthook.yml in skill root for complete configuration example.
+See `references/lefthook-consumer-template.yml` for the configuration example.

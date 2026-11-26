@@ -39,3 +39,6 @@ temp/
 
 # Scratch/workspace
 test-skill-workspace/
+
+# Vitest coverage output
+.coverage/

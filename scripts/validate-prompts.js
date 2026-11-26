@@ -7,30 +7,38 @@
 const fs = require('fs');
 const path = require('path');
 
-const promptsDir = path.join(__dirname, '../prompts');
+/** Checks that the prompts folder holds markdown files and returns the process exit code. */
+function run({
+  promptsDir = path.join(__dirname, '../prompts'),
+  fileSystem = fs,
+  log = console.log,
+  error = console.error,
+} = {}) {
+  try {
+    const markdownFiles = fileSystem.readdirSync(promptsDir).filter(f => f.endsWith('.md'));
 
-try {
-  const files = fs.readdirSync(promptsDir);
-  const markdownFiles = files.filter(f => f.endsWith('.md'));
+    if (markdownFiles.length === 0) {
+      throw new Error('No markdown files found in prompts/');
+    }
 
-  if (markdownFiles.length === 0) {
-    throw new Error('No markdown files found in prompts/');
+    // Check each prompt file
+    let totalLines = 0;
+    markdownFiles.forEach(file => {
+      totalLines += fileSystem.readFileSync(path.join(promptsDir, file), 'utf8').split('\n').length;
+    });
+
+    log('✅ Prompts validation passed');
+    log(`   Files: ${markdownFiles.length}`);
+    log(`   Total lines: ${totalLines}`);
+    return 0;
+  } catch (e) {
+    error('❌ Prompts validation failed:', e.message);
+    return 1;
   }
+}
 
-  // Check each prompt file
-  let totalLines = 0;
-  markdownFiles.forEach(file => {
-    const filePath = path.join(promptsDir, file);
-    const content = fs.readFileSync(filePath, 'utf8');
-    const lines = content.split('\n').length;
-    totalLines += lines;
-  });
+module.exports = { run };
 
-  console.log('✅ Prompts validation passed');
-  console.log(`   Files: ${markdownFiles.length}`);
-  console.log(`   Total lines: ${totalLines}`);
-
-} catch (error) {
-  console.error('❌ Prompts validation failed:', error.message);
-  process.exit(1);
+if (require.main === module) {
+  process.exitCode = run();
 }

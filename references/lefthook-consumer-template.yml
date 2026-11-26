@@ -1,0 +1,28 @@
+# Lefthook consumer template
+#
+# Copy this file to the root of the project under test as lefthook.yml and
+# adapt it. It is NOT this repository's own hook configuration (see the
+# lefthook.yml at this repository's root for that).
+#
+# The commands below are examples: "npm test" is the standard npm script, and
+# any other script name (such as validate:theme-json) must be defined in the
+# consuming project's package.json before the hook is enabled.
+#
+# Install hooks: lefthook install
+# Check installation: lefthook check-install
+# Run hooks manually: lefthook run pre-commit
+
+pre-commit:
+  parallel: false
+  commands:
+    tests:
+      glob: "src/**/*.{js,ts}"
+      exclude: "**/*.test.{js,ts}"
+      run: npm test
+      fail_text: "Tests failed"
+
+    # Example: requires a "validate:theme-json" script in the consuming project.
+    theme-json-validate:
+      glob: "theme.json"
+      run: npm run validate:theme-json
+      fail_text: "theme.json validation failed"
