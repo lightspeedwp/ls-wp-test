@@ -7,31 +7,39 @@
 const fs = require('fs');
 const path = require('path');
 
-const referencesDir = path.join(__dirname, '../references');
+/** Checks that a folder holds markdown files and returns the process exit code. */
+function run({
+  referencesDir = path.join(__dirname, '../references'),
+  fileSystem = fs,
+  log = console.log,
+  error = console.error,
+} = {}) {
+  try {
+    const markdownFiles = fileSystem.readdirSync(referencesDir).filter(f => f.endsWith('.md'));
 
-try {
-  const files = fs.readdirSync(referencesDir);
-  const markdownFiles = files.filter(f => f.endsWith('.md'));
+    if (markdownFiles.length === 0) {
+      throw new Error('No markdown files found in references/');
+    }
 
-  if (markdownFiles.length === 0) {
-    throw new Error('No markdown files found in references/');
+    // Check each reference file
+    let totalLines = 0;
+    markdownFiles.forEach(file => {
+      totalLines += fileSystem.readFileSync(path.join(referencesDir, file), 'utf8').split('\n').length;
+    });
+
+    log('✅ References validation passed');
+    log(`   Files: ${markdownFiles.length}`);
+    log(`   Total lines: ${totalLines}`);
+    log(`   Files: ${markdownFiles.join(', ')}`);
+    return 0;
+  } catch (e) {
+    error('❌ References validation failed:', e.message);
+    return 1;
   }
+}
 
-  // Check each reference file
-  let totalLines = 0;
-  markdownFiles.forEach(file => {
-    const filePath = path.join(referencesDir, file);
-    const content = fs.readFileSync(filePath, 'utf8');
-    const lines = content.split('\n').length;
-    totalLines += lines;
-  });
+module.exports = { run };
 
-  console.log('✅ References validation passed');
-  console.log(`   Files: ${markdownFiles.length}`);
-  console.log(`   Total lines: ${totalLines}`);
-  console.log(`   Files: ${markdownFiles.join(', ')}`);
-
-} catch (error) {
-  console.error('❌ References validation failed:', error.message);
-  process.exit(1);
+if (require.main === module) {
+  process.exitCode = run();
 }

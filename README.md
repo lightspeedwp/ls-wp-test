@@ -10,7 +10,7 @@ Comprehensive testing and QA automation for WordPress block themes, plugins, and
 - 📚 **5 Reference Guides** — Comprehensive guides for Jest, Playwright, WordPress standards, Lefthook, and theme utilities
 - 🛠️ **3 Validator Scripts** — Automated tools for coverage analysis, theme validation, and WP-CLI checks
 - 📖 **8 Documentation Guides** — Complete testing framework documentation
-- ✅ **Pre-Commit Hooks** — `lefthook.yml` for automated testing before commits
+- ✅ **Pre-Commit Hooks** — `references/lefthook-consumer-template.yml` for automated testing before commits
 
 **Evaluation Workspace:**
 - Full results from 10 test runs (5 test domains, with-skill vs baseline)
@@ -43,7 +43,7 @@ Comprehensive testing and QA automation for WordPress block themes, plugins, and
 ├── CHANGELOG.md                  # Release notes
 ├── CLAUDE.md                     # Claude Code instructions
 ├── AGENTS.md                     # Available agents
-├── lefthook.yml                  # Pre-commit configuration
+├── lefthook.yml                  # This repo's own pre-push hooks
 ├── prompts/                      # 8 specialized sub-skills
 ├── references/                   # 5 reference guides
 ├── scripts/                      # 3 validator scripts

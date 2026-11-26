@@ -6,30 +6,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const { findFiles } = require('./validate-json');
 
-function findYamlFiles(dir, exclude = []) {
-  let files = [];
-
-  const items = fs.readdirSync(dir);
-
-  items.forEach(item => {
-    const fullPath = path.join(dir, item);
-    const stat = fs.statSync(fullPath);
-
-    // Skip excluded directories
-    if (exclude.some(ex => fullPath.includes(ex))) {
-      return;
-    }
-
-    if (stat.isDirectory()) {
-      files = files.concat(findYamlFiles(fullPath, exclude));
-    } else if (item.endsWith('.yml') || item.endsWith('.yaml')) {
-      files.push(fullPath);
-    }
-  });
-
-  return files;
-}
+const findYamlFiles = (dir, exclude, fileSystem) =>
+  findFiles(dir, name => name.endsWith('.yml') || name.endsWith('.yaml'), exclude, fileSystem);
 
 function validateYaml(content) {
   // Simple YAML validation - check for common issues
@@ -53,30 +33,36 @@ function validateYaml(content) {
   }
 }
 
-try {
-  const repoRoot = path.join(__dirname, '..');
-  const yamlFiles = findYamlFiles(repoRoot, ['node_modules', '.git']);
+/** Screens every YAML file under repoRoot and returns the process exit code. */
+function run({ repoRoot = path.join(__dirname, '..'), fileSystem = fs, log = console.log, error = console.error } = {}) {
+  try {
+    const yamlFiles = findYamlFiles(repoRoot, ['node_modules', '.git'], fileSystem);
+    let allValid = true;
 
-  let allValid = true;
+    yamlFiles.forEach(file => {
+      try {
+        validateYaml(fileSystem.readFileSync(file, 'utf8'));
+        log(`✅ ${path.relative(repoRoot, file)}`);
+      } catch (e) {
+        error(`❌ ${path.relative(repoRoot, file)}: ${e.message}`);
+        allValid = false;
+      }
+    });
 
-  yamlFiles.forEach(file => {
-    try {
-      const content = fs.readFileSync(file, 'utf8');
-      validateYaml(content);
-      console.log(`✅ ${path.relative(repoRoot, file)}`);
-    } catch (error) {
-      console.error(`❌ ${path.relative(repoRoot, file)}: ${error.message}`);
-      allValid = false;
+    if (!allValid) {
+      return 1;
     }
-  });
 
-  if (!allValid) {
-    process.exit(1);
+    log(`\n✅ YAML validation passed (${yamlFiles.length} files)`);
+    return 0;
+  } catch (e) {
+    error('❌ YAML validation error:', e.message);
+    return 1;
   }
+}
 
-  console.log(`\n✅ YAML validation passed (${yamlFiles.length} files)`);
+module.exports = { findYamlFiles, validateYaml, run };
 
-} catch (error) {
-  console.error('❌ YAML validation error:', error.message);
-  process.exit(1);
+if (require.main === module) {
+  process.exitCode = run();
 }

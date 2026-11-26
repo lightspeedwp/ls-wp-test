@@ -34,7 +34,7 @@ lefthook run pre-commit
 
 ## Configuration
 
-See `lefthook.yml` in skill root for example configuration.
+See `lefthook-consumer-template.yml` in this folder for the example configuration. The `lefthook.yml` in the skill root is this repository's own pre-push configuration.
 
 ---
 

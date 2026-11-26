@@ -4,8 +4,10 @@
   "description": "WordPress Testing & QA Expert Skill - comprehensive testing and QA automation for WordPress block themes, plugins, and sites",
   "main": "docs/SKILL.md",
   "scripts": {
-    "test": "npm run validate:skill && npm run validate:references && npm run validate:prompts",
-    "test:watch": "npm test -- --watch",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:validators": "npm run validate:skill && npm run validate:references && npm run validate:prompts",
+    "typecheck": "tsc --noEmit",
     "lint": "npm run lint:json && npm run lint:markdown && npm run lint:yaml",
     "lint:json": "node scripts/validate-json.js",
     "lint:markdown": "markdownlint '**/*.md' --ignore node_modules --ignore test-skill-workspace",
@@ -16,28 +18,32 @@
     "validate:theme-json": "node scripts/theme-utils-validator.js",
     "validate:wp-cli": "node scripts/wp-cli-checks.js",
     "coverage:analyze": "node scripts/coverage-analyzer.js",
-    "quality:check": "npm run lint && npm run test",
+    "quality:check": "npm run lint && npm run typecheck && npm test && npm run test:validators",
     "verify": "npm run quality:check && npm run validate:theme-json"
   },
   "keywords": [
     "wordpress",
     "testing",
     "qa",
-    "jest",
     "playwright",
     "bats",
     "accessibility",
     "wcag",
     "skill",
-    "claude"
+    "claude",
+    "vitest"
   ],
   "author": "LightSpeedWP",
   "license": "MIT",
   "devDependencies": {
-    "markdownlint-cli": "^0.37.0"
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "5.1.0",
+    "markdownlint-cli": "^0.37.0",
+    "typescript": "^7.0.2",
+    "vitest": "5.1.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   },
   "repository": {
     "type": "git",

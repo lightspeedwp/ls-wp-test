@@ -7,23 +7,21 @@
 const fs = require('fs');
 const path = require('path');
 
-function findJsonFiles(dir, exclude = []) {
+/** Recursively lists files under a directory whose names match a predicate. */
+function findFiles(dir, matches, exclude = [], fileSystem = fs) {
   let files = [];
 
-  const items = fs.readdirSync(dir);
-
-  items.forEach(item => {
+  fileSystem.readdirSync(dir).forEach(item => {
     const fullPath = path.join(dir, item);
-    const stat = fs.statSync(fullPath);
 
     // Skip excluded directories
     if (exclude.some(ex => fullPath.includes(ex))) {
       return;
     }
 
-    if (stat.isDirectory()) {
-      files = files.concat(findJsonFiles(fullPath, exclude));
-    } else if (item.endsWith('.json')) {
+    if (fileSystem.statSync(fullPath).isDirectory()) {
+      files = files.concat(findFiles(fullPath, matches, exclude, fileSystem));
+    } else if (matches(item)) {
       files.push(fullPath);
     }
   });
@@ -31,30 +29,39 @@ function findJsonFiles(dir, exclude = []) {
   return files;
 }
 
-try {
-  const repoRoot = path.join(__dirname, '..');
-  const jsonFiles = findJsonFiles(repoRoot, ['node_modules', '.git']);
+const findJsonFiles = (dir, exclude, fileSystem) =>
+  findFiles(dir, name => name.endsWith('.json'), exclude, fileSystem);
 
-  let allValid = true;
+/** Validates every JSON file under repoRoot and returns the process exit code. */
+function run({ repoRoot = path.join(__dirname, '..'), fileSystem = fs, log = console.log, error = console.error } = {}) {
+  try {
+    const jsonFiles = findJsonFiles(repoRoot, ['node_modules', '.git'], fileSystem);
+    let allValid = true;
 
-  jsonFiles.forEach(file => {
-    try {
-      const content = fs.readFileSync(file, 'utf8');
-      JSON.parse(content);
-      console.log(`✅ ${path.relative(repoRoot, file)}`);
-    } catch (error) {
-      console.error(`❌ ${path.relative(repoRoot, file)}: ${error.message}`);
-      allValid = false;
+    jsonFiles.forEach(file => {
+      try {
+        JSON.parse(fileSystem.readFileSync(file, 'utf8'));
+        log(`✅ ${path.relative(repoRoot, file)}`);
+      } catch (e) {
+        error(`❌ ${path.relative(repoRoot, file)}: ${e.message}`);
+        allValid = false;
+      }
+    });
+
+    if (!allValid) {
+      return 1;
     }
-  });
 
-  if (!allValid) {
-    process.exit(1);
+    log(`\n✅ JSON validation passed (${jsonFiles.length} files)`);
+    return 0;
+  } catch (e) {
+    error('❌ JSON validation error:', e.message);
+    return 1;
   }
+}
 
-  console.log(`\n✅ JSON validation passed (${jsonFiles.length} files)`);
+module.exports = { findFiles, findJsonFiles, run };
 
-} catch (error) {
-  console.error('❌ JSON validation error:', error.message);
-  process.exit(1);
+if (require.main === module) {
+  process.exitCode = run();
 }

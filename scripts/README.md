@@ -51,27 +51,34 @@ node scripts/wp-cli-checks.js --theme=path/to/theme --wp-version=6.5
 
 ---
 
-### coverage-analyzer.js
-**Analyze Jest coverage gaps and identify untested code**
+### validate-skill.js
+**Validate the root `SKILL.md` and its documentation copy `docs/SKILL.md`**
 ```bash
-node scripts/coverage-analyzer.js --coverage-report=coverage/coverage-final.json --threshold=100
+node scripts/validate-skill.js
 ```
 
-**Identifies:**
-- Files below coverage threshold (with file paths and line numbers)
-- Untested functions (prioritized by criticality)
-- Missing test cases (edge cases, error paths, async)
-- Coverage trends (week-over-week improvement/regression)
-- Recommendations (which tests to write first)
+**Checks both files** for frontmatter on physical line 1, a `name` (3+ characters) and a double-quoted `description` (50+ characters). The accepted grammar is deliberately narrow: LF line endings and a double-quoted description only. Then it reports drift between the two files after resolving copy-relative links to repo-relative paths. It never rewrites either file. Exit code `1` on any failure.
 
-**Output:** Structured JSON + markdown report with actionable recommendations
+---
 
-**When to use:**
-- Coverage gap analysis (evaluation workflow)
-- Enforcing 100% coverage targets
-- Prioritizing test writing (what to test first)
-- Weekly coverage trend tracking
-- Pre-commit coverage validation
+### coverage-analyzer.js
+**Report coverage gaps from a coverage report (advisory)**
+```bash
+node scripts/coverage-analyzer.js --coverage-report=.coverage/coverage-summary.json
+```
+
+**Accepts:**
+- Istanbul summary (`coverage-summary.json`, written to `.coverage/` by `npm test`), including its `total` entry
+- Raw Istanbul map (`coverage-final.json`)
+- The report path may contain spaces and `=`; default `./.coverage/coverage-summary.json`
+
+**Reports:** every file with a lines, statements, functions or branches metric below 100%, plus the total.
+
+**Exit codes:** `0` when the report was read (gaps are advisory and do not fail the run);
+`1` when the file is unreadable, is not JSON, is not an object, has no file entries or has an unrecognised entry.
+Enforcement is the runner's job: `npm test` fails below 80% for this repository's scripts.
+
+---
 
 ## Usage
 

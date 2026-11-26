@@ -129,20 +129,14 @@ Validate:
 
 ## Lefthook Pre-Commit Hooks
 
-Automatic testing before commits:
+Example hooks for a project under test (copy `references/lefthook-consumer-template.yml`;
+script names other than `npm test` must exist in that project):
 ```yaml
 pre-commit:
   commands:
-    jest:
-      glob: "src/**/*.js"
-      run: npm run test:jest -- --coverage
-      
-    bats:
-      glob: "tests/**/*.bats"
-      run: npm run test:bats
-      
-    coverage-check:
-      run: npm run coverage:check -- --threshold 100
+    tests:
+      glob: "src/**/*.{js,ts}"
+      run: npm test
 ```
 
 ## CI/CD Integration
@@ -216,7 +210,7 @@ npm run audit:a11y                    # Audit accessibility
 **I'm setting up pre-commit automation:**
 - Read: `docs/LEFTHOOK.md` for setup and configuration
 - Reference: `references/lefthook-setup.md` for platform-specific installation
-- Skill file: `lefthook.yml` for example configuration
+- Skill file: `references/lefthook-consumer-template.yml` for example configuration
 
 ---
 
